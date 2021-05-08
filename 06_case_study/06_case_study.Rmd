@@ -1,0 +1,14 @@
+---
+title: "Untitled"
+author: "Binod"
+date: "5/8/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load
+
+## Data
