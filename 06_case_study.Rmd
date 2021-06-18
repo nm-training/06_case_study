@@ -31,10 +31,22 @@ head(raw_covid19_confirmed)
 ## Your Turn - 01
 
 
-1. Tidy all three data sets 
+1. Tidy all three data sets : 
+- confirmed
+- deaths
+- recovered
 
 ```{r}
+confirmed <- pivot_longer(data,
+      cols = 5:ncol(data),
+      names_to = "date",
+      values_to = "count"
+    ) 
+    
 
+ 
+ 
+ 
 
 
 
@@ -42,22 +54,44 @@ head(raw_covid19_confirmed)
 
 2. Filter out the country by Nepal and remove unused variables.
 
+- raw_confirmed_nepal
+- raw_deaths_nepal
+- raw_recovered_nepal
+
 
 ```{r}
+# install.packages("janitor")
+
+raw_confirmed_nepal <- confirmed %>% 
+  janitor::clean_names() %>% 
+  filter(country_region == "Nepal") %>% 
+  select(-province_state, -long, -lat, -country_region)
+
 
 ```
 
 
-3. Convert date variable into date format.
+3. Convert date variable into date format and add their respective 'type' variable.
+
+- confirmed_nepal
+- deaths_nepal
+- recovered_nepal
 
 ```{r}
-
+confirmed_nepal <- raw_confirmed_nepal %>% 
+  mutate(date = mdy(date), 
+         type = "confirmed"
+         ) 
+         
 
 ```
 
-4. Merge them into a variable named **covid19_nepal**
+4. Bind them into a variable named **covid19_nepal**
 
 ```{r}
+covid19_nepal
+
+
 
 ```
 
@@ -70,8 +104,7 @@ head(raw_covid19_confirmed)
 
 ```{r}
 
-
-
+covid19_nepal 
 
 
 
@@ -83,9 +116,98 @@ head(raw_covid19_confirmed)
 
 ## Cumulative vs Daily
 
-```{r}
+- daily_count = current_cumulative_count - previous_cumulative_count
 
+```{r}
+covid19_nepal_daily <- covid19_nepal %>%
+  group_by(type) %>%
+  mutate(daily_count = count - lag(   , default = 0)) %>% 
+  ungroup()
+
+covid19_nepal_daily
+```
+
+## Your Turn - 03 
+
+```{r}
+covid19_nepal_daily %>% 
+ggplot(aes(x = date, y = , color = type)) +
+  geom_line()
+
+```
+
+```{r}
+last_30_days <- covid19_nepal_daily %>%
+  filter(
+    date > Sys.Date() - 31,
+    type == "confirmed"
+  )
+
+last_30_days
+```
+
+## Last 30 days plot
+
+```{r}
+30_days_plot <- last_30_days %>%
+  ggplot(
+    aes(x = date, y = daily_count)
+  ) +
+  geom_col()
+
+30_days_plot
+```
+
+## Add Text Label
+
+```{r}
+plot_2 <- 30_days_plot +
+  geom_text(
+   aes(label = daily_count),
+    hjust = -0, # horizontal justify
+    angle = 45,   # change angle of text
+    size = 0      # font-size
+  ) # + 
+#  scale_y_continuous(expand = c(.1, .1)) 
+
+
+
+plot_2
+```
+
+
+## Add title 
+
+```{r}
+plot_3 <- plot_2 +
+  labs(title = "", 
+       caption = "")
+
+plot_3
+```
+
+## Custom theme 
+
+```{r}
+mytheme <-  theme_classic() +
+  theme(
+    plot.margin = margin(0.5, 0.5, 0.5, 0.5, "cm"),
+    plot.title = element_text(
+      hjust = 0.5, vjust = 5,
+      size = 15,
+      color = "black"
+    )
+  )
 
 
 ```
 
+## Add theme
+
+```{r}
+plot_4 <- plot_3 +
+  my_theme
+  
+
+plot_4
+```
